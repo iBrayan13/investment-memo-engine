@@ -1,0 +1,9 @@
+anthropic
+fastapi
+instructor
+langgraph
+pydantic
+pydantic-settings
+requests
+openai
+uvicorn
