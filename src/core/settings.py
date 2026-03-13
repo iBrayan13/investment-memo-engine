@@ -1,8 +1,8 @@
 import enum
-from typing import Union
+from typing import Union, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 
 class Enviroments(enum.IntEnum):
     DEV = 1
@@ -27,9 +27,11 @@ class Settings(BaseSettings):
   
     PROJECT_FLAG: str = "Project: Investment Memo Engine"
     
-    # OpenAI configuration
+    # LLM configuration
     OPENAI_API_KEY: str = ""
-    OPENAI_MODEL: str = "gpt-4o-mini"
+    DEEPSEEK_API_KEY: str = ""
+    ANTHROPIC_API_KEY: str = ""
+    OPENROUTER_API_KEY: str = ""
     
     # Server configuration
     host: str = "127.0.0.1"
@@ -44,6 +46,23 @@ class Settings(BaseSettings):
             return Enviroments.from_str(value)
         except (KeyError, ValueError):
             return Enviroments.DEV
+    
+    @model_validator(mode="after")
+    def validate_llm_keys(self):
+        keys = [
+            self.OPENAI_API_KEY,
+            self.DEEPSEEK_API_KEY,
+            self.ANTHROPIC_API_KEY,
+            self.OPENROUTER_API_KEY,
+        ]
+
+        if not any(k and k.strip() for k in keys):
+            raise ValueError(
+                "At least one LLM API key must be provided: "
+                "OPENAI_API_KEY, DEEPSEEK_API_KEY, ANTHROPIC_API_KEY, or OPENROUTER_API_KEY"
+            )
+
+        return self
 
 class DevelopmentSettings(Settings):
     ENV: Enviroments = Enviroments.DEV

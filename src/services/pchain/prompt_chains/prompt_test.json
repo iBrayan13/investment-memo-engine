@@ -1,0 +1,9 @@
+{
+  "prompts": [
+    {
+      "prompt": "What is the capital of Colombia?",
+      "content_keys": [],
+      "return_model": null
+    }
+  ]
+}
