@@ -272,7 +272,7 @@ class MinimalChainable:
 
     async def _handle_prompt(
         self,
-        client: Literal['openai'],#, 'anthropic', 'deepseek'],
+        client: Literal['openai', 'anthropic', 'deepseek', 'openrouter'],
         model: str,
         prompt: ClientPrompt,
         context: dict[str, Any],
@@ -302,7 +302,7 @@ class MinimalChainable:
 
     async def run(
         self,
-        client: Literal['openai'],#, 'anthropic', 'deepseek'],
+        client: Literal['openai', 'anthropic', 'deepseek', 'openrouter'],
         model: str,
         prompts: list[ClientPrompt],
         context: dict[str, Any] | None = None,
