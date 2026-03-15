@@ -3,6 +3,7 @@ import logging
 import datetime
 
 from src.langg.state import MemoState
+from src.services.docx_service import DOCXService
 from src.services.memos_manager import MemosManager
 from src.services.pchain.chainable import MinimalChainable
 from src.core.settings import DevelopmentSettings as Settings
@@ -30,11 +31,13 @@ class Nodes:
         minimal_chainable: MinimalChainable,
         prompt_manager: ChainPromptManager,
         memos_manager: MemosManager,
+        docx_service: DOCXService,
     ) -> None:
         self.settings = settings
         self.minimal_chainable = minimal_chainable
         self.prompt_manager = prompt_manager
         self.memos_manager = memos_manager
+        self.docx_service = docx_service
 
     # ── 1. merge_inputs ──────────────────────────────────────────────────────
 
@@ -395,9 +398,7 @@ class Nodes:
         logger.info("Building memo DOCX")
         self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Generando documento DOCX.")
 
-        # TODO: implementar generación de DOCX usando python-docx o similar, con formato profesional
-
-        state["memo_file_path"] = f"{state['memo_id']}.docx"
+        state["memo_file_path"] = str(self.docx_service.generate(memo=state["memo_request"]))
         self.memos_manager.update_memo_status(
             memo_id=state["memo_id"],
             status=StatusEnum.completed,

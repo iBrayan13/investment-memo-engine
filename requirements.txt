@@ -4,6 +4,7 @@ instructor
 langgraph
 pydantic
 pydantic-settings
+python-docx
 requests
 openai
 uvicorn
