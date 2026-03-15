@@ -29,7 +29,8 @@ class WorkFlow:
         self.workflow_app.add_node("income_agent",     self.nodes.income_agent)
         self.workflow_app.add_node("risk_agent",       self.nodes.risk_agent)
         self.workflow_app.add_node("build_memo",       self.nodes.build_memo)
-        self.workflow_app.add_node("validate_json",    self.nodes.validate_json)
+        self.workflow_app.add_node("build_memo_docx",    self.nodes.build_memo_docx)
+        self.workflow_app.add_node("mark_as_failed",    self.nodes.mark_as_failed)
 
         self.workflow_app.set_entry_point("merge_inputs")
         self.workflow_app.add_edge("merge_inputs",     "extract_entities")
@@ -43,16 +44,18 @@ class WorkFlow:
         self.workflow_app.add_edge("income_agent",     "build_memo")
         self.workflow_app.add_edge("risk_agent",       "build_memo")
 
-        self.workflow_app.add_edge("build_memo",       "validate_json")
+        self.workflow_app.add_edge("build_memo",       "build_memo_docx")
 
         self.workflow_app.add_conditional_edges(
-            "validate_json",
+            "build_memo_docx",
             WorkFlow.should_retry,
             {
-                "done":    END,
+                "done":    "mark_as_failed",
                 "retry":   "budget_agent",
-                "give_up": END,
+                "give_up": "mark_as_failed",
             },
         )
+
+        self.workflow_app.add_edge("mark_as_failed", END)
 
         self.app = self.workflow_app.compile()
