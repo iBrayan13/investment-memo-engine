@@ -2,7 +2,7 @@ import json
 import logging
 import datetime
 
-from fastapi import APIRouter, Request, status, BackgroundTasks
+from fastapi import APIRouter, Request, status, BackgroundTasks, HTTPException
 
 from src.langg.nodes import Nodes
 from src.langg.state import MemoState
@@ -18,9 +18,27 @@ settings = Settings()
 memo_router = APIRouter(prefix="/memo", tags=["Memo"])
 
 
-@memo_router.get("/status")
+@memo_router.get("/")
+def list_memos():
+    memos_manager = MemosManager()
+    memos = memos_manager.get_memos()
+    return {"data": memos}
 
-@memo_router.get("/status/{memo_id}")
+@memo_router.get("/{memo_id}")
+def get_memo(memo_id: str):
+    memos_manager = MemosManager()
+    memo = memos_manager.get_memo_by_id(memo_id)
+    if not memo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memo not found")
+    return {"data": memo}
+
+@memo_router.delete("/{memo_id}")
+def delete_memo(memo_id: str):
+    memos_manager = MemosManager()
+    success = memos_manager.delete_memo(memo_id)
+    if not success:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memo not found")
+    return {"message": "Memo deleted successfully"}
 
 @memo_router.post("/generate", status_code=status.HTTP_201_CREATED)
 async def generate_memo(background_tasks: BackgroundTasks, request: Request):
