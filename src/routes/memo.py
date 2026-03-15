@@ -7,6 +7,7 @@ from fastapi import APIRouter, Request, status, BackgroundTasks, HTTPException
 from src.langg.nodes import Nodes
 from src.langg.state import MemoState
 from src.langg.graph import WorkFlow, StateGraph
+from src.models.router import MemoGenerateRequest
 from src.services.docx_service import DOCXService
 from src.services.memos_manager import MemosManager
 from src.services.pchain.chainable import MinimalChainable
@@ -42,7 +43,7 @@ def delete_memo(memo_id: str):
     return {"message": "Memo deleted successfully"}
 
 @memo_router.post("/generate", status_code=status.HTTP_201_CREATED)
-async def generate_memo(background_tasks: BackgroundTasks, request: Request):
+async def generate_memo(request: MemoGenerateRequest, background_tasks: BackgroundTasks):
     logger.info("Received request to generate memo")
 
     workflow = WorkFlow(
@@ -59,7 +60,7 @@ async def generate_memo(background_tasks: BackgroundTasks, request: Request):
     memo_id = f"memo-{int(datetime.datetime.now().timestamp())}"
     background_tasks.add_task(
         workflow.app.ainvoke,
-        input={"memo_id": memo_id, "raw_inputs": []},
+        input={"memo_id": memo_id, "raw_inputs": request.raw_inputs},
     )
 
     return {
