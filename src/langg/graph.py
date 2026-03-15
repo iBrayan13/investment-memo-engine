@@ -50,7 +50,7 @@ class WorkFlow:
             "build_memo_docx",
             WorkFlow.should_retry,
             {
-                "done":    "mark_as_failed",
+                "done":    END,
                 "retry":   "budget_agent",
                 "give_up": "mark_as_failed",
             },

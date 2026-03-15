@@ -90,11 +90,11 @@ class MemosManager:
 
     def _load_memos(self) -> List[Memo]:
         try:
-            with open(self.memos_file, "r") as f:
+            with open(self.memos_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         except FileNotFoundError:
             return []
 
     def _save_memos(self, memos: List[Memo]):
-        with open(self.memos_file, "w") as f:
-            json.dump(memos, f)
+        with open(self.memos_file, "w", encoding="utf-8") as f:
+            json.dump(memos, f, ensure_ascii=False)

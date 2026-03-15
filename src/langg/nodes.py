@@ -54,7 +54,7 @@ class Nodes:
 
     async def extract_entities(self, state: MemoState):
         logger.info("Extracting entities")
-        self.memos_manager.update_memo_message(memo_id=state["memo_id"], message="Extrayendo entidades clave de los datos fuente.")
+        self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Extrayendo entidades clave de los datos fuente.")
 
         schema = json.dumps(ExtractedEntities.model_json_schema(), indent=2)
         prompt = f"""
@@ -84,7 +84,7 @@ class Nodes:
 
     async def normalize_data(self, state: MemoState):
         logger.info("Normalizing data")
-        self.memos_manager.update_memo_message(memo_id=state["memo_id"], message="Normalizando datos.")
+        self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Normalizando datos.")
 
         schema = json.dumps(NormalizedData.model_json_schema(), indent=2)
         prompt = f"""
@@ -118,7 +118,7 @@ class Nodes:
 
     async def budget_agent(self, state: MemoState):
         logger.info("Analyzing budget and financing structure")
-        self.memos_manager.update_memo_message(memo_id=state["memo_id"], message="Analizando presupuesto y estructura de financiamiento.")
+        self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Analizando presupuesto y estructura de financiamiento.")
 
         schema = json.dumps(BudgetAnalysis.model_json_schema(), indent=2)
         nd = state["normalized_data"].model_dump()
@@ -155,7 +155,7 @@ class Nodes:
 
     async def income_agent(self, state: MemoState):
         logger.info("Analyzing income, NOI and return scenarios")
-        self.memos_manager.update_memo_message(memo_id=state["memo_id"], message="Analizando ingresos, NOI y escenarios de retorno.")
+        self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Analizando ingresos, NOI y escenarios de retorno.")
 
         schema = json.dumps(IncomeAnalysis.model_json_schema(), indent=2)
         nd = state["normalized_data"].model_dump()
@@ -206,7 +206,7 @@ class Nodes:
 
     async def risk_agent(self, state: MemoState):
         logger.info("Analyzing risks and due diligence")
-        self.memos_manager.update_memo_message(memo_id=state["memo_id"], message="Analizando riesgos y diligencia debida.")
+        self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Analizando riesgos y diligencia debida.")
 
         schema = json.dumps(RiskAnalysis.model_json_schema(), indent=2)
         nd = state["normalized_data"].model_dump()
@@ -242,7 +242,7 @@ class Nodes:
 
     def build_memo(self, state: MemoState):
         logger.info("Assembling MemoRequest from typed models")
-        self.memos_manager.update_memo_message(memo_id=state["memo_id"], message="Ensamblando el memorando de inversión final.")
+        self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Ensamblando el memorando de inversión final.")
 
         nd: NormalizedData = state["normalized_data"]
         ba: BudgetAnalysis = state["budget_analysis"]
@@ -393,25 +393,25 @@ class Nodes:
 
     def build_memo_docx(self, state: MemoState):
         logger.info("Building memo DOCX")
-        self.memos_manager.update_memo_message(memo_id=state["memo_id"], message="Generando documento DOCX.")
+        self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Generando documento DOCX.")
 
         # TODO: implementar generación de DOCX usando python-docx o similar, con formato profesional
 
-        state["memo_file_path"]
+        state["memo_file_path"] = f"{state['memo_id']}.docx"
         self.memos_manager.update_memo_status(
             memo_id=state["memo_id"],
-            status=StatusEnum.DONE,
+            status=StatusEnum.completed,
             status_message="Memo generado con exito.",
             memo_object=state["memo_request"].model_dump(),
             memo_file_path=state["memo_file_path"],
         )
         return state
     
-    def mark_as_failed(self, state: MemoState, error_message: str):
-        logger.error(f"Workflow failed: {error_message}")
+    def mark_as_failed(self, state: MemoState):
+        logger.error(f"Workflow failed")
         self.memos_manager.update_memo_status(
             memo_id=state["memo_id"],
             status=StatusEnum.failed,
-            status_message=f"Error: {error_message}",
+            status_message="Error: Workflow failed",
         )
         return state
