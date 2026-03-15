@@ -38,5 +38,5 @@ async def call_graph():
     graph_result: MemoState =  await workflow.app.ainvoke(input={"raw_inputs": [deal_structure, property_overview, risks]})
 
     return {
-        "data": graph_result["memo_json"]
+        "data": graph_result["memo_request"].model_dump() if graph_result.get("memo_request") else None,
     }
