@@ -1,7 +1,7 @@
 {
   "prompts": [
     {
-      "prompt": "\n            Extrae **TODA la información de inversión** de la fuente que aparece a continuación.\n            Devuelve **un único objeto JSON** que siga **estrictamente este esquema**.\n            **Todos los campos del esquema son OBLIGATORIOS** — no uses `null`.\n            Si un valor **no aparece explícitamente en la fuente**, **inférelo a partir del contexto**.\n            Devuelve **ÚNICAMENTE JSON**, **sin markdown y sin explicaciones**.\n\n            Schema:\n            {schema}\n\n            Source data:\n            {source}\n            ",
+      "prompt": "\n            Extract relevant investment information from the following data.\n            \n            Identify:\n            - project name\n            - location\n            - asset type\n            - acquisition price\n            - deal structure\n            - risks\n            - financials\n            - development plan\n\n            THE VALUES AND RESPONSES MUST BE IN SPANISH EXCEPT NAMES BUT THE KEYS MUST BE IN ENGLISH.\n\n            Schema:\n            {schema}\n\n            Source data:\n            {source}\n            ",
       "content_keys": [],
       "return_model": null
     }

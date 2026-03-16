@@ -86,7 +86,9 @@ class Nodes:
             context={"schema": schema, "source": state["extracted_entities"].model_dump()},
             returns_model={0: NormalizedData},
         )
-        state["normalized_data"] = responses[0].response
+        normalize_data: NormalizedData = responses[0].response
+        normalize_data.project_name = state["extracted_entities"].project_name
+        state["normalized_data"] = normalize_data
         return state
 
     # ── 4a. budget_agent → BudgetAnalysis ────────────────────────────────────
