@@ -38,11 +38,13 @@ export default function GenerateMemo() {
         const text = await file.text();
         if (file.name.endsWith('.csv')) {
           const parsed = parseCSV(text);
-          rawInputs.push({ type: 'csv_data', data: { rows: parsed, filename: file.name } });
+          rawInputs.push(JSON.parse(JSON.stringify(parsed)));
         } else {
           const json = JSON.parse(text);
           // Send the entire JSON as-is (don't split arrays into individual items)
-          rawInputs.push({ type: 'json_data', data: Array.isArray(json) ? { items: json, filename: file.name } : json });
+          if (Array.isArray(json)) {
+            rawInputs.push(...json);
+          } else {rawInputs.push(json);}
         }
       }
 
