@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     
     # Server configuration
     host: str = "127.0.0.1"
-    port: int = 8080
+    port: int = 7070
 
     @field_validator('ENV', mode='before')
     @classmethod
