@@ -1,0 +1,9 @@
+{
+  "prompts": [
+    {
+      "prompt": "\n            Normaliza estos datos de inversión. **Todos los campos son OBLIGATORIOS** — no uses `null`.\n\n            **Reglas:**\n\n            * Convierte **TODOS los valores monetarios** a **números en millones de COP**.\n            Ejemplos: `\"COP $3,500 MM\"` → `3500.0` | `\"$5,000,000,000 COP\"` → `5000.0`\n            * **acquisition_price_base** y **acquisition_price_max** deben mantenerse en **COP completos (no en millones)**.\n            Ejemplo: `3500000000.0`\n            * **severity** debe ser exactamente uno de:\n            `CRITICAL | HIGH | MEDIUM | LOW`\n\n            * Si un valor monetario es **un rango**, usa **el punto medio**.\n            * Devuelve **ÚNICAMENTE JSON que coincida con el esquema**, **sin markdown**.\n\n\n            Schema:\n            {schema}\n\n            Source data:\n            {source}\n            ",
+      "content_keys": [],
+      "return_model": null
+    }
+  ]
+}
