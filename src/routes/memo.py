@@ -1,8 +1,9 @@
-import json
+import io
 import logging
 import datetime
 
 from fastapi import APIRouter, Request, status, BackgroundTasks, HTTPException
+from fastapi.responses import StreamingResponse
 
 from src.langg.nodes import Nodes
 from src.langg.state import MemoState
@@ -33,6 +34,24 @@ def get_memo(memo_id: str):
     if not memo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memo not found")
     return {"data": memo}
+
+@memo_router.get("/docx/{memo_id}")
+def get_memo(memo_id: str):
+    memos_manager = MemosManager()
+    memo = memos_manager.get_memo_by_id(memo_id)
+    if not memo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memo not found")
+    
+    if not memo.get("memo_file_path"):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memo file not found")
+    
+    with open(memo["memo_file_path"], "rb") as f:
+        file_content = f.read()
+        return StreamingResponse(
+            io.BytesIO(file_content),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f'attachment; filename="{memo_id}.docx"'},
+        )
 
 @memo_router.delete("/{memo_id}")
 def delete_memo(memo_id: str):
