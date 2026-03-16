@@ -1,9 +1,0 @@
-{
-  "prompts": [
-    {
-      "prompt": "\n            Construye **el presupuesto completo del proyecto y la estructura de financiamiento**.\n            **Todos los campos son OBLIGATORIOS** — no uses `null`.\n\n            **Reglas:**\n\n            * Los **montos monetarios** deben ser **cadenas de texto en MM COP** (por ejemplo: `\"3,500\"`).\n            * Los **porcentajes** deben ser **cadenas de texto con el símbolo %** (por ejemplo: `\"15.9%\"`).\n            * **land.amount_millions_cop** debe ser **igual a** `normalized base_purchase_price_millions_cop`.\n            * **total_millions_cop** debe ser **igual a la suma de todas las líneas del presupuesto**.\n            * **equity_required_millions_cop + senior_debt_millions_cop** debe ser **igual a** `total_millions_cop`.\n            * Si una **línea del presupuesto no tiene datos**, distribúyela proporcionalmente usando **ratios típicos de desarrollo inmobiliario en Colombia**.\n            * Devuelve **ÚNICAMENTE JSON que coincida con el esquema**, **sin markdown**.\n\n            Schema:\n            {schema}\n\n            Source data:\n            {source}\n            ",
-      "content_keys": [],
-      "return_model": null
-    }
-  ]
-}

@@ -1,9 +1,0 @@
-{
-  "prompts": [
-    {
-      "prompt": "\n            Identifica **TODOS los riesgos de inversión y los hallazgos de due diligence**.\n            **Todos los campos son OBLIGATORIOS** — no uses `null` ni cadenas vacías.\n\n            **Reglas:**\n\n            * **severity** debe ser exactamente uno de: `CRITICAL | HIGH | MEDIUM | LOW`.\n            * **mitigation_strategy** debe ser **concreta y accionable**, no genérica.\n            * Campos **dd_***: escribe **el estado actual y los hallazgos clave** para cada área.\n            Si **no hay información disponible**, escribe:\n            `\"Pendiente — no hay información disponible en los datos fuente.\"`\n            * **conditions**: incluye **al menos 3 condiciones específicas de inversión** basadas en los riesgos identificados.\n            * Devuelve **ÚNICAMENTE JSON que coincida con el esquema**, **sin markdown**.\n\n            Schema:\n            {schema}\n\n            Source data:\n            {source}\n            ",
-      "content_keys": [],
-      "return_model": null
-    }
-  ]
-}
