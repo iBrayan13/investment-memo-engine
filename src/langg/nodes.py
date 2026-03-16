@@ -60,24 +60,12 @@ class Nodes:
         self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Extrayendo entidades clave de los datos fuente.")
 
         schema = json.dumps(ExtractedEntities.model_json_schema(), indent=2)
-        prompt = f"""
-        Extract ALL investment data from the source below.
-
-        Return a single JSON object that strictly follows this schema.
-        Every field in the schema is REQUIRED — do not use null.
-        If a value is not explicit in the source, infer it from context.
-        Return ONLY JSON, no markdown, no explanation.
-
-        Schema:
-        {schema}
-
-        Source data:
-        {state["merged_input"]}
-        """
+        prompts = self.prompt_manager.get_prompt_chain("extract_entities")
         responses = await self.minimal_chainable.run(
             client="openrouter",
             model="openai/gpt-4o-mini",
-            prompts=[ClientPrompt(prompt=prompt)],
+            prompts=prompts,
+            context={"schema": schema, "source": state["merged_input"]},
             returns_model={0: ExtractedEntities},
         )
         state["extracted_entities"] = responses[0].response
@@ -90,28 +78,12 @@ class Nodes:
         self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Normalizando datos.")
 
         schema = json.dumps(NormalizedData.model_json_schema(), indent=2)
-        prompt = f"""
-        Normalize this investment data. Every field is REQUIRED — do not use null.
-
-        Rules:
-        - Convert ALL monetary values to numbers in millions of COP.
-          Examples: "COP $3,500 MM" → 3500.0 | "$5,000,000,000 COP" → 5000.0
-        - acquisition_price_base and acquisition_price_max stay in full COP (not MM).
-          Example: 3500000000.0
-        - severity must be exactly one of: CRITICAL | HIGH | MEDIUM | LOW
-        - If a monetary value is a range, use the midpoint.
-        - Return ONLY JSON matching the schema, no markdown.
-
-        Schema:
-        {schema}
-
-        Source:
-        {state["extracted_entities"].model_dump()}
-        """
+        prompts = self.prompt_manager.get_prompt_chain("normalize_data")
         responses = await self.minimal_chainable.run(
             client="openrouter",
             model="openai/gpt-4o-mini",
-            prompts=[ClientPrompt(prompt=prompt)],
+            prompts=prompts,
+            context={"schema": schema, "source": state["extracted_entities"].model_dump()},
             returns_model={0: NormalizedData},
         )
         state["normalized_data"] = responses[0].response
@@ -124,31 +96,12 @@ class Nodes:
         self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Analizando presupuesto y estructura de financiamiento.")
 
         schema = json.dumps(BudgetAnalysis.model_json_schema(), indent=2)
-        nd = state["normalized_data"].model_dump()
-        prompt = f"""
-        Build the complete project budget and financing structure.
-        Every field is REQUIRED — do not use null.
-
-        Rules:
-        - Monetary amounts as strings in MM COP (e.g. "3,500").
-        - Percentages as strings with % sign (e.g. "15.9%").
-        - land.amount_millions_cop must equal normalized base_purchase_price_millions_cop.
-        - total_millions_cop must equal the sum of all budget lines.
-        - equity_required_millions_cop + senior_debt_millions_cop must equal total_millions_cop.
-        - If a budget line has no data, distribute proportionally using typical
-          real estate development ratios for Colombia.
-        - Return ONLY JSON matching the schema, no markdown.
-
-        Schema:
-        {schema}
-
-        Data:
-        {json.dumps(nd, indent=2)}
-        """
+        prompts = self.prompt_manager.get_prompt_chain("budget_agent")
         responses = await self.minimal_chainable.run(
             client="openrouter",
             model="openai/gpt-4o-mini",
-            prompts=[ClientPrompt(prompt=prompt)],
+            prompts=prompts,
+            context={"schema": schema, "source": state["normalized_data"].model_dump()},
             returns_model={0: BudgetAnalysis},
         )
         state["budget_analysis"] = responses[0].response
@@ -161,45 +114,12 @@ class Nodes:
         self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Analizando ingresos, NOI y escenarios de retorno.")
 
         schema = json.dumps(IncomeAnalysis.model_json_schema(), indent=2)
-        nd = state["normalized_data"].model_dump()
-        prompt = f"""
-        Build the stabilized income statement, return scenarios, market context
-        and GP/LP structure for this investment.
-        Every field is REQUIRED — do not use null.
-
-        Rules:
-        - Monetary amounts as strings in MM COP (e.g. "4,800").
-        - Percentages as strings with % (e.g. "10%").
-        - IRR as string with % (e.g. "18%"), equity multiple as string (e.g. "2.1x").
-        - EGI = gross_potential - vacancy. NOI = EGI - opex. These must be consistent.
-        - gross_pct = 100% always. All other pct fields relative to gross_potential.
-        - bear scenario: conservative assumptions (higher vacancy, lower exit cap rate).
-        - base scenario: most likely case.
-        - bull scenario: optimistic assumptions.
-        - For GP/LP structure, use the deal_structure and development_plan context.
-        - If exact values are not in the data, use market-standard assumptions
-          for Colombian real estate (vacancy 10-15%, opex 35-40% of EGI).
-        - comparables: provide market comparables for this asset type and location.
-          If the input data contains real comparables, use them.
-          If not, infer AT LEAST 1 plausible comparable from your knowledge of
-          the Colombian real estate market for this asset type and location.
-          Include up to 3 if you can reasonably support them.
-        - market_fundamentals: describe supply/demand, vacancy rates, absorption
-          and rental trends for this asset type and location.
-        - competitive_advantages: explain what differentiates this asset
-          from the comparables listed.
-        - Return ONLY JSON matching the schema, no markdown.
-
-        Schema:
-        {schema}
-
-        Data:
-        {json.dumps(nd, indent=2)}
-        """
+        prompts = self.prompt_manager.get_prompt_chain("income_agent")
         responses = await self.minimal_chainable.run(
             client="openrouter",
             model="openai/gpt-4o-mini",
-            prompts=[ClientPrompt(prompt=prompt)],
+            prompts=prompts,
+            context={"schema": schema, "source": state["normalized_data"].model_dump()},
             returns_model={0: IncomeAnalysis},
         )
         state["income_analysis"] = responses[0].response
@@ -212,30 +132,12 @@ class Nodes:
         self.memos_manager.update_memo_message(memo_id=state["memo_id"], status_message="Analizando riesgos y diligencia debida.")
 
         schema = json.dumps(RiskAnalysis.model_json_schema(), indent=2)
-        nd = state["normalized_data"].model_dump()
-        prompt = f"""
-        Identify ALL investment risks and due diligence findings.
-        Every field is REQUIRED — do not use null or empty strings.
-
-        Rules:
-        - severity must be exactly one of: CRITICAL | HIGH | MEDIUM | LOW
-        - mitigation_strategy must be concrete and actionable, not generic.
-        - dd_* fields: write the current status and key findings for each area.
-          If no information is available for an area, write "Pendiente — no hay
-          información disponible en los datos fuente."
-        - conditions: at least 3 specific investment conditions based on the risks.
-        - Return ONLY JSON matching the schema, no markdown.
-
-        Schema:
-        {schema}
-
-        Data:
-        {json.dumps(nd, indent=2)}
-        """
+        prompts = self.prompt_manager.get_prompt_chain("risk_agent")
         responses = await self.minimal_chainable.run(
             client="openrouter",
             model="openai/gpt-4o-mini",
-            prompts=[ClientPrompt(prompt=prompt)],
+            prompts=prompts,
+            context={"schema": schema, "source": state["normalized_data"].model_dump()},
             returns_model={0: RiskAnalysis},
         )
         state["risk_analysis"] = responses[0].response
@@ -402,7 +304,7 @@ class Nodes:
         self.memos_manager.update_memo_status(
             memo_id=state["memo_id"],
             status=StatusEnum.completed,
-            status_message="Memo generado con exito.",
+            status_message="Memorando generado con exito.",
             memo_object=state["memo_request"].model_dump(),
             memo_file_path=state["memo_file_path"],
         )

@@ -13,7 +13,7 @@ class MemosManager:
             new_memo: Memo = {
                 "memo_id": memo_id,
                 "status": StatusEnum.started,
-                "status_message": "Iniciando generación del memo",
+                "status_message": "Iniciando generación del memorando",
                 "memo_object": {},
                 "memo_file_path": None
             }

@@ -45,7 +45,7 @@ class ChainPromptManager(BaseModel):
         file_path = self._get_file_path(name, "prompt")
         logger.info(f"Looking for prompt chain file: {file_path}")
         if os.path.exists(file_path):
-            with open(file_path) as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             prompts = [ClientPrompt(**prompt) for prompt in data.get("prompts", [])]
             return prompts
