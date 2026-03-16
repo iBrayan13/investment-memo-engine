@@ -9,7 +9,7 @@ import { ArrowLeft, FileText, Download, Trash2, Loader2 } from 'lucide-react';
 import type { Memo, MemoObject } from '@/types/memo';
 import { DeleteModal } from '@/components/DeleteModal';
 
-const API_BASE = 'http://localhost:7070/';
+const API_BASE = 'http://localhost:7070';
 
 export default function MemoDetail() {
   const { memo_id } = useParams<{ memo_id: string }>();

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: investment-memo-backend
+    ports:
+      - "7070:7070"
+    environment:
+      - ENV=DEV
+      - host=0.0.0.0
+      - port=7070
+    env_file:
+      - ./backend/.env.dev
+    volumes:
+      - ./backend/memo:/app/memo
+    restart: unless-stopped
+    networks:
+      - memo-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: investment-memo-frontend
+    ports:
+      - "8080:8080"
+    environment:
+      - VITE_API_URL=http://localhost:7070
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - memo-network
+
+networks:
+  memo-network:
+    driver: bridge

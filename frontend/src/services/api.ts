@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Memo, GenerateResponse, RawInput, ApiListResponse } from '@/types/memo';
 
 const api = axios.create({
-  baseURL: 'http://localhost:7070/'
+  baseURL: 'http://localhost:7070'
 });
 
 export const MemoService = {
